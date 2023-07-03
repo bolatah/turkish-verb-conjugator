@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Turkish Verb Conjugator</title>
+  </head>
+  <body>
+    <h2>Conjugation for: <span th:text="${verb}"></span></h2>
+    <h3>Selected Tense: <span th:text="${selectedTense}"></span></h3>
+    <h3>Selected Tense: <span th:text="${verbType}"></span></h3>
+    <pre>
+      <ul>
+        <th:block th:each="line : ${conjugatedForm.split('\n')}">
+          <li th:text="${line}"></li>
+        </th:block>
+      </ul>
+    </pre>
+  </body>
+</html>

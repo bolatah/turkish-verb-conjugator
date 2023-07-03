@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Turkish Verb Conjugator</title>
+  </head>
+  <body>
+    <h1>Turkish Verb Conjugator</h1>
+    <form action="/result" method="get">
+      <input type="text" id="verb" name="verb" placeholder="Verb" required />
+      <select name="tense" id="tense" required>
+        <option value="" disabled selected>Select a tense</option>
+        <option value="Imp">Imperfect</option>
+        <option value="Aor">Aorist</option>
+        <option value="Past">Simple Past</option>
+        <option value="Prog1">Present Progressive</option>
+        <option value="Prog2">Past Progressive</option>
+        <option value="Narr">Narrative</option>
+        <option value="Fut">Future</option>
+      </select>
+      <select name="verbType" id="verbType" required>
+        <option value="" disabled selected>Select verb type</option>
+        <option value="positive">Positive</option>
+        <option value="negative">Negative</option>
+      </select>
+      <button type="submit">Conjugate</button>
+    </form>
+  </body>
+</html>

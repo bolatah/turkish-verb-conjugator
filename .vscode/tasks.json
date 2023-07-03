@@ -1,0 +1,67 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Terminate Process",
+            "type": "shell",
+            "command": "pkill -f com.example.YourApplicationClass",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Compile and Run",
+            "type": "shell",
+            "command": "mvn compile && mvn exec:java -Dexec.mainClass=com.example.YourApplicationClass",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "echo": true,
+                "focus": true,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Compile",
+            "type": "shell",
+            "command": "mvn compile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Run",
+            "type": "shell",
+            "command": "mvn exec:java -Dexec.mainClass=com.example.YourApplicationClass",
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "mvn clean install",
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
