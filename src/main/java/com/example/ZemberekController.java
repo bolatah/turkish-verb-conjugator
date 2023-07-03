@@ -66,6 +66,18 @@ public class ZemberekController {
             for (String posNeg : positiveNegatives) {
                 for (String time : times) {
                     for (String person : persons) {
+
+                        // Add conditions to filter the verb type and selected tense
+                        if (verbType.equals("positive") && posNeg.equals("Neg")) {
+                            continue; // Skip negative conjugations if the verb type is positive
+                        }
+                        if (verbType.equals("negative") && posNeg.equals("")) {
+                            continue; // Skip negative conjugations if the verb type is positive
+                        }
+                        if (!tense.isEmpty() && !time.equals(tense)) {
+                            continue; // Skip conjugations that don't match the selected tense
+                        }
+
                         List<String> seq = Stream.of(posNeg, time, person)
                                 .filter(s -> s.length() > 0)
                                 .collect(Collectors.toList());
