@@ -8,18 +8,30 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import zemberek.morphology.TurkishMorphology;
 import zemberek.morphology.generator.WordGenerator.Result;
+import zemberek.morphology.lexicon.RootLexicon;
 
 @Controller
 public class ZemberekController {
 
     private String lastVerb; // Store the last submitted verb
+
+    private boolean startsWithVowel(String str) {
+        if (str.length() == 0) {
+            return false;
+        }
+
+        char firstChar = Character.toLowerCase(str.charAt(0));
+        return firstChar == 'ü' || firstChar == 'e' || firstChar == 'i' || firstChar == 'ö';
+    }
 
     @GetMapping("/")
     public String index() {
@@ -59,7 +71,14 @@ public class ZemberekController {
             String[] positiveNegatives = { "", "Neg" };
             String[] times = { "", "Imp", "Aor", "Past", "Prog1", "Prog2", "Narr", "Fut" };
             String[] persons = { "A1sg", "A2sg", "A3sg", "A1pl", "A2pl", "A3pl" };
-            TurkishMorphology morphology = TurkishMorphology.builder().setLexicon(lastVerb).disableCache().build();
+            String[] turkishPersons = { "Ben", "Sen", "O", "Biz", "Siz", "Onlar" };
+
+            TurkishMorphology morphologyWithDefaultLexicon = TurkishMorphology.builder()
+                    .setLexicon(RootLexicon.getDefault())
+                    .disableCache().build();
+
+            TurkishMorphology morphology = TurkishMorphology.builder().setLexicon(lastVerb)
+                    .disableCache().build();
 
             List<Result> results = new ArrayList<>();
 
@@ -81,14 +100,27 @@ public class ZemberekController {
                         List<String> seq = Stream.of(posNeg, time, person)
                                 .filter(s -> s.length() > 0)
                                 .collect(Collectors.toList());
-                        String stem = morphology.analyze(lastVerb).getAnalysisResults().get(0).getStem();
-                        List<Result> wordResults = morphology.getWordGenerator().generate(stem, seq);
 
-                        if (wordResults.size() == 0) {
+                        String stem = lastVerb.substring(0, lastVerb.length() - 3);
+                        String modifiedStem = lastVerb.substring(0, lastVerb.length() - 4) + "d";
+                        List<Result> verbResults;
+
+                        if (stem.endsWith("t") && (seq.get(0) == "Prog1" || seq.get(0) == "Aor"
+                                || seq.get(0) == "Fut")) {
+                            verbResults = morphologyWithDefaultLexicon.getWordGenerator().generate(modifiedStem, seq);
+                        } else if (stem.endsWith("r") && seq.get(0) == "Aor") {
+                            TurkishMorphology morphologyWithCreateDefaults = TurkishMorphology.createWithDefaults();
+                            verbResults = morphologyWithCreateDefaults.getWordGenerator().generate(stem, seq);
+                        } else {
+                            verbResults = morphology.getWordGenerator().generate(stem, seq);
+                            System.out.println(seq);
+                        }
+
+                        if (verbResults.size() == 0) {
                             System.out.println("Cannot generate Stem = [" + stem + "] Morphemes = " + seq);
                             continue;
                         }
-                        results.addAll(wordResults);
+                        results.addAll(verbResults);
                     }
                 }
             }
@@ -113,6 +145,8 @@ public class ZemberekController {
             model.addAttribute("times", times);
             model.addAttribute("selectedTense", tense);
             model.addAttribute("verbType", verbType);
+
+            model.addAttribute("persons", turkishPersons);
 
             return "result";
         }

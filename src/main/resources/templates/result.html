@@ -2,17 +2,33 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <title>Turkish Verb Conjugator</title>
+    <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border: 1px solid black;
+        padding: 4px;
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
-    <h2>Conjugation for: <span th:text="${verb}"></span></h2>
-    <h3>Selected Tense: <span th:text="${selectedTense}"></span></h3>
-    <h3>Selected Tense: <span th:text="${verbType}"></span></h3>
-    <pre>
-      <ul>
-        <th:block th:each="line : ${conjugatedForm.split('\n')}">
-          <li th:text="${line}"></li>
-        </th:block>
-      </ul>
-    </pre>
+    <table>
+      <tr>
+        <th>Verb</th>
+        <th>Tense</th>
+        <th>Verb Type</th>
+      </tr>
+      <tr>
+        <td><span th:text="${verb}"></span></td>
+        <td><span th:text="${selectedTense}"></span></td>
+        <td><span th:text="${verbType}"></span></td>
+      </tr>
+    </table>
+    <pre><ul><th:block th:each="line, status : ${conjugatedForm.split('\n')}"><li><span th:text="${persons[__${status.index % persons.length}__]}"></span> <span th:text="${line}"></span><span>.</span></li></th:block></ul></pre>
   </body>
 </html>
