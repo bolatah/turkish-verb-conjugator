@@ -2,6 +2,56 @@
 <html>
   <head>
     <title>Turkish Verb Conjugator</title>
+    <style>
+      h1 {
+        font-size: 28px;
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+        font-family: Arial, sans-serif;
+      }
+      form {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      form > * {
+        margin: 10px;
+      }
+      input[type="text"] {
+        font-size: 18px;
+        padding: 10px;
+        width: 275px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      select {
+        font-size: 18px;
+        padding: 10px;
+        width: 300px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: white;
+      }
+      button {
+        font-size: 16px;
+        padding: 12px 24px;
+        width: 300px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+    </style>
   </head>
   <body>
     <h1>Turkish Verb Conjugator</h1>
@@ -9,20 +59,19 @@
       <input type="text" id="verb" name="verb" placeholder="Verb" required />
       <select name="tense" id="tense" required>
         <option value="" disabled selected>Select a tense</option>
-        <option value="Imp">Imperfect</option>
-        <option value="Aor">Aorist</option>
+        <option value="Imp">Imperative</option>
+        <option value="Aor">Simple Present</option>
         <option value="Past">Simple Past</option>
-        <option value="Prog1">Present Progressive</option>
-        <option value="Prog2">Past Progressive</option>
-        <option value="Narr">Narrative</option>
+        <option value="Prog1">Present Continuous</option>
+        <option value="Prog2">Past Continuous</option>
+        <option value="Narr">Reported Past</option>
         <option value="Fut">Future</option>
       </select>
       <select name="verbType" id="verbType" required>
-        <option value="" disabled selected>Select verb type</option>
         <option value="positive">Positive</option>
         <option value="negative">Negative</option>
       </select>
-      <button type="submit">Conjugate</button>
+      <button type="submit">Submit</button>
     </form>
   </body>
 </html>

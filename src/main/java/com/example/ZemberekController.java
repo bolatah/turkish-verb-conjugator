@@ -8,10 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,15 +21,6 @@ import zemberek.morphology.lexicon.RootLexicon;
 public class ZemberekController {
 
     private String lastVerb; // Store the last submitted verb
-
-    private boolean startsWithVowel(String str) {
-        if (str.length() == 0) {
-            return false;
-        }
-
-        char firstChar = Character.toLowerCase(str.charAt(0));
-        return firstChar == 'ü' || firstChar == 'e' || firstChar == 'i' || firstChar == 'ö';
-    }
 
     @GetMapping("/")
     public String index() {
@@ -72,7 +61,8 @@ public class ZemberekController {
             String[] times = { "", "Imp", "Aor", "Past", "Prog1", "Prog2", "Narr", "Fut" };
             String[] persons = { "A1sg", "A2sg", "A3sg", "A1pl", "A2pl", "A3pl" };
             String[] turkishPersons = { "Ben", "Sen", "O", "Biz", "Siz", "Onlar" };
-
+            String[] turkishPersonsForImp = { "Sen", "Sen", "O", "Siz", "Siz", "Siz", "Onlar" };
+            String[] turkishPersonsForImpPos = { "Sen", "Sen", "O", "Siz", "Siz", "Onlar" };
             TurkishMorphology morphologyWithDefaultLexicon = TurkishMorphology.builder()
                     .setLexicon(RootLexicon.getDefault())
                     .disableCache().build();
@@ -111,14 +101,24 @@ public class ZemberekController {
                         } else if (stem.endsWith("r") && seq.get(0) == "Aor") {
                             TurkishMorphology morphologyWithCreateDefaults = TurkishMorphology.createWithDefaults();
                             verbResults = morphologyWithCreateDefaults.getWordGenerator().generate(stem, seq);
+                        } else if (seq.get(0) == "Imp" && stem.endsWith("t") && seq.get(1) == "A2pl") {
+                            verbResults = morphologyWithDefaultLexicon.getWordGenerator().generate(modifiedStem,
+                                    seq);
                         } else {
                             verbResults = morphology.getWordGenerator().generate(stem, seq);
                             System.out.println(seq);
                         }
-
                         if (verbResults.size() == 0) {
                             System.out.println("Cannot generate Stem = [" + stem + "] Morphemes = " + seq);
                             continue;
+                        }
+
+                        if (seq.get(0) == "Imp") {
+                            model.addAttribute("persons", turkishPersonsForImpPos);
+                        } else if ((seq.get(0) == "Neg" && seq.get(1) == "Imp")) {
+                            model.addAttribute("persons", turkishPersonsForImp);
+                        } else {
+                            model.addAttribute("persons", turkishPersons);
                         }
                         results.addAll(verbResults);
                     }
@@ -145,8 +145,6 @@ public class ZemberekController {
             model.addAttribute("times", times);
             model.addAttribute("selectedTense", tense);
             model.addAttribute("verbType", verbType);
-
-            model.addAttribute("persons", turkishPersons);
 
             return "result";
         }
