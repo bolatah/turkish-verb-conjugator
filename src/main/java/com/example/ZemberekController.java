@@ -1,15 +1,19 @@
 package com.example;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,7 +24,10 @@ import zemberek.morphology.lexicon.RootLexicon;
 @Controller
 public class ZemberekController {
 
-    private String lastVerb; // Store the last submitted verb
+    private String getRandomQueryParameter() {
+        Random random = new Random();
+        return "rnd=" + random.nextInt(1000000);
+    }
 
     @GetMapping("/")
     public String index() {
@@ -30,44 +37,34 @@ public class ZemberekController {
     @GetMapping("/result")
     public String handleResult(@RequestParam(required = false) String verb, String tense, String verbType,
             Model model) {
-        if (verb == null && lastVerb == null) {
+        if (verb == null) {
 
             String errorMessage = "The 'verb' parameter is required.";
             model.addAttribute("error", errorMessage);
             return "error"; // Assuming you have an "error" view to display the error message
         } else {
-            if (verb != null) {
-                lastVerb = verb;
-            }
-
-            if (lastVerb.length() < 4) {
+            if (verb.length() < 4) {
                 String errorMessage = "The verb must be at least 4 characters including '-mek' or '-mak' ";
                 model.addAttribute("error", errorMessage);
             }
 
-            if (lastVerb == null) {
-                String errorMessage = "The 'verb' parameter is required.";
-                model.addAttribute("error", errorMessage);
-                return "error";
-            }
-            if (!verb.endsWith("mek") && !verb.endsWith("mak") && !lastVerb.endsWith("mek")
-                    && !lastVerb.endsWith("mak")) {
+            if (!verb.endsWith("mek") && !verb.endsWith("mak") && !verb.endsWith("mek")
+                    && !verb.endsWith("mak")) {
                 String errorMessage = "The 'verb' must be in infinitive form that finishes with '-mek' or '-mak'.";
                 model.addAttribute("error", errorMessage);
                 return "error";
             }
 
             String[] positiveNegatives = { "", "Neg" };
-            String[] times = { "", "Imp", "Aor", "Past", "Prog1", "Prog2", "Narr", "Fut" };
+            String[] times = { "", "Aor", "Past", "Prog1", "Prog2", "Narr", "Fut" };
             String[] persons = { "A1sg", "A2sg", "A3sg", "A1pl", "A2pl", "A3pl" };
             String[] turkishPersons = { "Ben", "Sen", "O", "Biz", "Siz", "Onlar" };
-            String[] turkishPersonsForImp = { "Sen", "Sen", "O", "Siz", "Siz", "Siz", "Onlar" };
-            String[] turkishPersonsForImpPos = { "Sen", "Sen", "O", "Siz", "Siz", "Onlar" };
+
             TurkishMorphology morphologyWithDefaultLexicon = TurkishMorphology.builder()
                     .setLexicon(RootLexicon.getDefault())
                     .disableCache().build();
 
-            TurkishMorphology morphology = TurkishMorphology.builder().setLexicon(lastVerb)
+            TurkishMorphology morphology = TurkishMorphology.builder().setLexicon(verb)
                     .disableCache().build();
 
             List<Result> results = new ArrayList<>();
@@ -91,35 +88,26 @@ public class ZemberekController {
                                 .filter(s -> s.length() > 0)
                                 .collect(Collectors.toList());
 
-                        String stem = lastVerb.substring(0, lastVerb.length() - 3);
-                        String modifiedStem = lastVerb.substring(0, lastVerb.length() - 4) + "d";
+                        String stem = verb.substring(0, verb.length() - 3);
+                        String modifiedStem = verb.substring(0, verb.length() - 4) + "d";
                         List<Result> verbResults;
 
-                        if (stem.endsWith("t") && (seq.get(0) == "Prog1" || seq.get(0) == "Aor"
+                        if (stem.endsWith("t") && stem.length() > 2 && (seq.get(0) == "Prog1" || seq.get(0) == "Aor"
                                 || seq.get(0) == "Fut")) {
                             verbResults = morphologyWithDefaultLexicon.getWordGenerator().generate(modifiedStem, seq);
                         } else if (stem.endsWith("r") && seq.get(0) == "Aor") {
                             TurkishMorphology morphologyWithCreateDefaults = TurkishMorphology.createWithDefaults();
                             verbResults = morphologyWithCreateDefaults.getWordGenerator().generate(stem, seq);
-                        } else if (seq.get(0) == "Imp" && stem.endsWith("t") && seq.get(1) == "A2pl") {
-                            verbResults = morphologyWithDefaultLexicon.getWordGenerator().generate(modifiedStem,
-                                    seq);
                         } else {
                             verbResults = morphology.getWordGenerator().generate(stem, seq);
                             System.out.println(seq);
                         }
+
                         if (verbResults.size() == 0) {
                             System.out.println("Cannot generate Stem = [" + stem + "] Morphemes = " + seq);
                             continue;
                         }
 
-                        if (seq.get(0) == "Imp") {
-                            model.addAttribute("persons", turkishPersonsForImpPos);
-                        } else if ((seq.get(0) == "Neg" && seq.get(1) == "Imp")) {
-                            model.addAttribute("persons", turkishPersonsForImp);
-                        } else {
-                            model.addAttribute("persons", turkishPersons);
-                        }
                         results.addAll(verbResults);
                     }
                 }
@@ -140,12 +128,22 @@ public class ZemberekController {
             }
 
             String conjugatedForm = conjugatedFormBuilder.toString();
-            model.addAttribute("verb", lastVerb);
-            model.addAttribute("conjugatedForm", conjugatedForm);
+
+            model.addAttribute("verb", verb);
+
+            if (conjugatedForm == null || conjugatedForm.length() < 1) {
+                String errorMessage = "It is not a valid verb.";
+                model.addAttribute("conjugatedForm", "");
+                model.addAttribute("error", errorMessage);
+                return "error";
+            } else {
+                model.addAttribute("conjugatedForm", conjugatedForm);
+            }
+
             model.addAttribute("times", times);
             model.addAttribute("selectedTense", tense);
             model.addAttribute("verbType", verbType);
-
+            model.addAttribute("persons", turkishPersons);
             return "result";
         }
     }
@@ -153,6 +151,7 @@ public class ZemberekController {
     @PostMapping("/result")
     public String handleResultPost(@RequestParam("verb") String verb, RedirectAttributes redirectAttributes) {
         redirectAttributes.addAttribute("verb", verb);
-        return "redirect:/result";
+        return "redirect:/result?" + getRandomQueryParameter();
     }
+
 }

@@ -7,14 +7,24 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.example</groupId>
-    <artifactId>zemberek-with-java</artifactId>
+    <artifactId>turkish-verb-conjugator</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
+   <repositories>
+        <repository>
+            <id>zemberek-repo</id>
+            <name>zemberek Maven Repo on Github</name>
+            <url>https://raw.github.com/ahmetaa/maven-repo/master</url>
+        </repository>
+    </repositories>
+    
     <dependencies>
         <!-- Spring Boot Starter -->
         <dependency>
@@ -31,27 +41,33 @@
         </dependency>
         
         <!-- Local dependency: zemberek-full.jar -->
-     <!--    <dependency>
+    <!--     <dependency>
             <groupId>zemberek</groupId>
             <artifactId>zemberek-full</artifactId>
             <version>0.17.1</version>
             <scope>system</scope>
             <systemPath>${basedir}/lib/zemberek-full.jar</systemPath>
-        </dependency> -->
-          <dependency>
+        </dependency>  -->
+       <dependency>
             <groupId>zemberek-nlp</groupId>
             <artifactId>zemberek-morphology</artifactId>
             <version>0.17.1</version>
-        </dependency>
+        </dependency> 
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Spring Boot Maven Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.5.3</version>
+                 <executions>
+                <execution>
+                    <goals>
+                        <goal>repackage</goal>
+                    </goals>
+                </execution>
+            </executions>
             </plugin>
 
             <!-- Maven Compiler Plugin -->
@@ -62,6 +78,21 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    
+                </configuration>
+            </plugin>
+        <!-- Maven JAR Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass
+              >com.example.YourApplicationClass</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>
